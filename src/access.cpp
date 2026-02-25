@@ -1775,6 +1775,7 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
     for (ENTITY * entity_list_item
 
 
+
     :
     entity_list
     )
@@ -3780,12 +3781,7 @@ void api_restore_entity_list_neo4j(const Neo4jPart& conn, const std::vector<int6
     }
 }
 
-extern DELTA_STATE* lastsave_ds;
-extern std::unordered_map<void*, int64_t> ptr2nodeid;
-DELTA_STATE* lastsave_ds = nullptr;
-std::unordered_map<void*, int64_t> ptr2nodeid;
-
-void api_save_neo4j(const Neo4jPart& conn)
+void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
 {
     // 1. 确保“部件”节点存在，并获取版本信息
     mg_map* qparams = mg_map_make_empty(1);
@@ -3867,23 +3863,23 @@ void api_save_neo4j(const Neo4jPart& conn)
     DELTA_STATE* thissave_ds; //这次保存
     api_note_state(thissave_ds);
     {
-        // ... 处理 thissave_ds 和 lastsave_ds 为空的初始情况 ...
+        // ... 处理 thissave_ds 和 ctx.lastsave_ds 为空的初始情况 ...
         HISTORY_STREAM* hs;
         api_get_default_history(hs);
         if (thissave_ds == nullptr)
         {
             thissave_ds = hs->get_active_ds(); //最新的差状态
         }
-        if (lastsave_ds == nullptr)
+        if (ctx.lastsave_ds == nullptr)
         {
-            lastsave_ds = hs->get_root_ds(); //最早的差状态
+            ctx.lastsave_ds = hs->get_root_ds(); //最早的差状态
         }
     }
 
     // 4. 遍历ACIS历史，找出变更的实体
     std::unordered_set<ENTITY*> created_or_updated_entity_list, deleted_entity_list;
     DELTA_STATE* this_ds = thissave_ds;
-    while (this_ds != lastsave_ds)
+    while (this_ds != ctx.lastsave_ds)
     {
         BULLETIN_BOARD* bb = this_ds->bb();
         while (bb)
@@ -4073,7 +4069,7 @@ void api_save_neo4j(const Neo4jPart& conn)
 #endif
 
 
-    lastsave_ds = thissave_ds;
+    ctx.lastsave_ds = thissave_ds;
 
     // 6. 为每个变更的实体创建内存中的Node对象
     std::vector<Node*> node_list;
@@ -4100,9 +4096,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 BODY * ptr = (BODY*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4116,9 +4112,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 LUMP * ptr = (LUMP*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4132,9 +4128,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 SHELL * ptr = (SHELL*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4148,9 +4144,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 SUBSHELL * ptr = (SUBSHELL*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4164,9 +4160,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 WIRE * ptr = (WIRE*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4181,9 +4177,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 FACE * ptr = (FACE*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4211,9 +4207,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 LOOP * ptr = (LOOP*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4227,9 +4223,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 COEDGE * ptr = (COEDGE*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4244,9 +4240,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 EDGE * ptr = (EDGE*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4261,9 +4257,9 @@ void api_save_neo4j(const Neo4jPart& conn)
             {
                 VERTEX * ptr = (VERTEX*)entity_ptr;
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4278,9 +4274,9 @@ void api_save_neo4j(const Neo4jPart& conn)
                 APOINT * ptr = (APOINT*)entity_ptr;
                 SPAposition pos = ((APOINT*)ptr)->coords();
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4307,9 +4303,9 @@ void api_save_neo4j(const Neo4jPart& conn)
                         direction.set_z(direction.z() * gem.param_scale);
                         SPAinterval range = gem.gme_get_subset_range();
                         Node* ptrnode = new Node();
-                        if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                        if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                         {
-                            updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                            updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                             updated_entity_list.push_back(ptr);
                         }
                         ptr2node[ptr] = ptrnode;
@@ -4333,9 +4329,9 @@ void api_save_neo4j(const Neo4jPart& conn)
                         SPAvector major_axis = gem.major_axis;
                         SPAinterval range = gem.gme_get_subset_range();
                         Node* ptrnode = new Node();
-                        if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                        if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                         {
-                            updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                            updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                             updated_entity_list.push_back(ptr);
                         }
                         ptr2node[ptr] = ptrnode;
@@ -4363,9 +4359,9 @@ void api_save_neo4j(const Neo4jPart& conn)
                         SPAinterval helix_range = gem.helix_range();
                         SPAinterval range = gem.gme_get_subset_range();
                         Node* ptrnode = new Node();
-                        if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                        if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                         {
-                            updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                            updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                             updated_entity_list.push_back(ptr);
                         }
                         ptr2node[ptr] = ptrnode;
@@ -4407,9 +4403,9 @@ void api_save_neo4j(const Neo4jPart& conn)
                         plane gem = ((PLANE*)ptr)->gme_get_def();
                         AccessUtils::Save::plane_data* gem_data = AccessUtils::Save::get_plane_data(&gem);
                         Node* ptrnode = new Node();
-                        if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                        if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                         {
-                            updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                            updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                             updated_entity_list.push_back(ptr);
                         }
                         ptr2node[ptr] = ptrnode;
@@ -4431,9 +4427,9 @@ void api_save_neo4j(const Neo4jPart& conn)
                         sphere gem = ((SPHERE*)ptr)->gme_get_def();
                         AccessUtils::Save::sphere_data* gem_data = AccessUtils::Save::get_sphere_data(&gem);
                         Node* ptrnode = new Node();
-                        if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                        if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                         {
-                            updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                            updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                             updated_entity_list.push_back(ptr);
                         }
                         ptr2node[ptr] = ptrnode;
@@ -4456,9 +4452,9 @@ void api_save_neo4j(const Neo4jPart& conn)
                         torus gem = ((TORUS*)ptr)->gme_get_def();
                         AccessUtils::Save::torus_data* gem_data = AccessUtils::Save::get_torus_data(&gem);
                         Node* ptrnode = new Node();
-                        if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                        if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                         {
-                            updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                            updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                             updated_entity_list.push_back(ptr);
                         }
                         ptr2node[ptr] = ptrnode;
@@ -4482,9 +4478,9 @@ void api_save_neo4j(const Neo4jPart& conn)
                         cone gem = ((CONE*)ptr)->gme_get_def();
                         AccessUtils::Save::cone_data* gem_data = AccessUtils::Save::get_cone_data(&gem);
                         Node* ptrnode = new Node();
-                        if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                        if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                         {
-                            updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                            updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                             updated_entity_list.push_back(ptr);
                         }
                         ptr2node[ptr] = ptrnode;
@@ -4519,9 +4515,9 @@ void api_save_neo4j(const Neo4jPart& conn)
                 SPAmatrix affine = transf.affine();
                 SPAvector translation = transf.translation();
                 Node* ptrnode = new Node();
-                if (ptr2nodeid.find(ptr) != ptr2nodeid.end())
+                if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
-                    updated_entity_nodeid_list.push_back(ptr2nodeid.at(ptr));
+                    updated_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(ptr));
                     updated_entity_list.push_back(ptr);
                 }
                 ptr2node[ptr] = ptrnode;
@@ -4570,7 +4566,7 @@ void api_save_neo4j(const Neo4jPart& conn)
                           "CALL apoc.create.node(Z.X,{a:Z.a,b:Z.b,c:Z.c,d:Z.d,e:Z.e,f:Z.f,g:Z.g,h:Z.h,i:Z.i,j:Z.j,k:Z.k,l:Z.l,m:Z.m,n:Z.n,o:Z.o,p:Z.p,q:Z.q,r:Z.r,s:Z.s,t:Z.t,u:Z.u,v:Z.v,w:Z.w,x:Z.x,y:Z.y,z:Z.z,A:Z.A,B:Z.B,C:Z.C,D:Z.D,E:Z.E,F:Z.F,G:Z.G,H:Z.H,I:Z.I,J:Z.J,K:Z.K,L:Z.L,M:Z.M,N:Z.N,O:Z.O,P:Z.P,Q:Z.Q}) "
                           "YIELD node RETURN id(node) ORDER BY Z.W ", qparams);
         mg_map_destroy(qparams);
-        // ... 获取返回的ID，并更新本地Node对象的id成员和全局ptr2nodeid映射 ...
+        // ... 获取返回的ID，并更新本地Node对象的id成员和全局ctx.ptr2nodeid映射 ...
     }
     {
         mg_result* result;
@@ -4606,14 +4602,14 @@ void api_save_neo4j(const Neo4jPart& conn)
 
 #endif
 
-    //所有指向update前旧节点的节点（ptr2nodeid.at(ptr)）都要再创建一条指向update后新节点（ptr2node.at(ptr)->id）的边
+    //所有指向update前旧节点的节点（ctx.ptr2nodeid.at(ptr)）都要再创建一条指向update后新节点（ptr2node.at(ptr)->id）的边
     {
         uint32_t updated_entity_list_size = updated_entity_list.size();
         mg_list* mgl_param_list = mg_list_make_empty(updated_entity_list_size);
         for (auto ptr : updated_entity_list)
         {
             mg_list* mgl_ptr_list = mg_list_make_empty(2);
-            mg_list_append(mgl_ptr_list, mg_value_make_integer(ptr2nodeid.at(ptr)));
+            mg_list_append(mgl_ptr_list, mg_value_make_integerctx.(ptr2nodeid.at(ptr)));
             mg_list_append(mgl_ptr_list, mg_value_make_integer(ptr2node.at(ptr)->id));
             mg_list_append(mgl_param_list, mg_value_make_list(mgl_ptr_list));
         }
@@ -4632,12 +4628,12 @@ void api_save_neo4j(const Neo4jPart& conn)
     //更新节点id对照表
     for (const auto& [ptr, node] : ptr2node)
     {
-        ptr2nodeid[ptr] = node->id;
+        ctx.ptr2nodeid[ptr] = node->id;
     }
 
     for (const auto& entity_ptr : deleted_entity_list)
     {
-        deleted_entity_nodeid_list.push_back(ptr2nodeid.at(entity_ptr));
+        deleted_entity_nodeid_list.push_back(ctx.ptr2nodeid.at(entity_ptr));
     }
 
     //将part与generation节点相连
@@ -4677,7 +4673,7 @@ void api_save_neo4j(const Neo4jPart& conn)
     for (const auto& entity_ptr : created_or_updated_entity_list)
     {
         {
-            int64_t b = ptr2nodeid.at(entity_ptr);
+            int64_t b = ctx.ptr2nodeid.at(entity_ptr);
             Relationship2* r = new Relationship2(generationnode->id, b);
             r->label = mg_value_make_string("generation_new_ptr");
             r->properties['a'] = mg_value_make_string("generation_new_ptr");
@@ -4692,8 +4688,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->lump();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("body_lump_ptr");
                         r->properties['a'] = mg_value_make_string("body_lump_ptr");
@@ -4704,8 +4700,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->wire();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("body_wire_ptr");
                         r->properties['a'] = mg_value_make_string("body_wire_ptr");
@@ -4716,8 +4712,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->transform();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("body_transform_ptr");
                         r->properties['a'] = mg_value_make_string("body_transform_ptr");
@@ -4733,8 +4729,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->next();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("lump_next_ptr");
                         r->properties['a'] = mg_value_make_string("lump_next_ptr");
@@ -4745,8 +4741,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->shell();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("lump_shell_ptr");
                         r->properties['a'] = mg_value_make_string("lump_shell_ptr");
@@ -4757,8 +4753,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->body();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("lump_body_ptr");
                         r->properties['a'] = mg_value_make_string("lump_body_ptr");
@@ -4774,8 +4770,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->next();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("shell_next_ptr");
                         r->properties['a'] = mg_value_make_string("shell_next_ptr");
@@ -4786,8 +4782,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->subshell();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("shell_subshell_ptr");
                         r->properties['a'] = mg_value_make_string("shell_subshell_ptr");
@@ -4798,8 +4794,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->face();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("shell_face_ptr");
                         r->properties['a'] = mg_value_make_string("shell_face_ptr");
@@ -4810,8 +4806,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->wire();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("shell_wire_ptr");
                         r->properties['a'] = mg_value_make_string("shell_wire_ptr");
@@ -4822,8 +4818,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->lump();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("shell_lump_ptr");
                         r->properties['a'] = mg_value_make_string("shell_lump_ptr");
@@ -4839,8 +4835,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->parent();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("subshell_parent_ptr");
                         r->properties['a'] = mg_value_make_string("subshell_parent_ptr");
@@ -4851,8 +4847,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->sibling();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("subshell_sibling_ptr");
                         r->properties['a'] = mg_value_make_string("subshell_sibling_ptr");
@@ -4863,8 +4859,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->child();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("subshell_child_ptr");
                         r->properties['a'] = mg_value_make_string("subshell_child_ptr");
@@ -4875,8 +4871,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->face();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("subshell_face_ptr");
                         r->properties['a'] = mg_value_make_string("subshell_face_ptr");
@@ -4887,8 +4883,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->wire();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("subshell_wire_ptr");
                         r->properties['a'] = mg_value_make_string("subshell_wire_ptr");
@@ -4904,8 +4900,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->next();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("wire_next_ptr");
                         r->properties['a'] = mg_value_make_string("wire_next_ptr");
@@ -4916,8 +4912,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->coedge();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("wire_coedge_ptr");
                         r->properties['a'] = mg_value_make_string("wire_coedge_ptr");
@@ -4928,8 +4924,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->owner();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("wire_owner_ptr");
                         r->properties['a'] = mg_value_make_string("wire_owner_ptr");
@@ -4940,8 +4936,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->subshell();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("wire_subshell_ptr");
                         r->properties['a'] = mg_value_make_string("wire_subshell_ptr");
@@ -4957,8 +4953,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->next();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("face_next_ptr");
                         r->properties['a'] = mg_value_make_string("face_next_ptr");
@@ -4969,8 +4965,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->loop();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("face_loop_ptr");
                         r->properties['a'] = mg_value_make_string("face_loop_ptr");
@@ -4981,8 +4977,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->shell();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("face_shell_ptr");
                         r->properties['a'] = mg_value_make_string("face_shell_ptr");
@@ -4993,8 +4989,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->subshell();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("face_subshell_ptr");
                         r->properties['a'] = mg_value_make_string("face_subshell_ptr");
@@ -5005,8 +5001,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->geometry();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("face_geometry_ptr");
                         r->properties['a'] = mg_value_make_string("face_geometry_ptr");
@@ -5022,8 +5018,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->next();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("loop_next_ptr");
                         r->properties['a'] = mg_value_make_string("loop_next_ptr");
@@ -5034,8 +5030,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->start();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("loop_start_ptr");
                         r->properties['a'] = mg_value_make_string("loop_start_ptr");
@@ -5046,8 +5042,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->face();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("loop_face_ptr");
                         r->properties['a'] = mg_value_make_string("loop_face_ptr");
@@ -5063,8 +5059,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->next();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("coedge_next_ptr");
                         r->properties['a'] = mg_value_make_string("coedge_next_ptr");
@@ -5075,8 +5071,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->previous();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("coedge_previous_ptr");
                         r->properties['a'] = mg_value_make_string("coedge_previous_ptr");
@@ -5087,8 +5083,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->partner();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("coedge_partner_ptr");
                         r->properties['a'] = mg_value_make_string("coedge_partner_ptr");
@@ -5099,8 +5095,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->edge();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("coedge_edge_ptr");
                         r->properties['a'] = mg_value_make_string("coedge_edge_ptr");
@@ -5111,8 +5107,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->owner();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("coedge_owner_ptr");
                         r->properties['a'] = mg_value_make_string("coedge_owner_ptr");
@@ -5123,8 +5119,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->geometry();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("coedge_geometry_ptr");
                         r->properties['a'] = mg_value_make_string("coedge_geometry_ptr");
@@ -5140,8 +5136,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->start();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("edge_start_ptr");
                         r->properties['a'] = mg_value_make_string("edge_start_ptr");
@@ -5152,8 +5148,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->end();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("edge_end_ptr");
                         r->properties['a'] = mg_value_make_string("edge_end_ptr");
@@ -5164,8 +5160,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->coedge();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("edge_coedge_ptr");
                         r->properties['a'] = mg_value_make_string("edge_coedge_ptr");
@@ -5176,8 +5172,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->geometry();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("edge_geometry_ptr");
                         r->properties['a'] = mg_value_make_string("edge_geometry_ptr");
@@ -5193,8 +5189,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->edge();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("vertex_edge_ptr");
                         r->properties['a'] = mg_value_make_string("vertex_edge_ptr");
@@ -5205,8 +5201,8 @@ void api_save_neo4j(const Neo4jPart& conn)
                     ENTITY * __tmp_ptr = ptr->geometry();
                     if (__tmp_ptr != nullptr)
                     {
-                        int64_t a = ptr2nodeid.at(ptr);
-                        int64_t b = ptr2nodeid.at(__tmp_ptr);
+                        int64_t a = ctx.ptr2nodeid.at(ptr);
+                        int64_t b = ctx.ptr2nodeid.at(__tmp_ptr);
                         Relationship2* r = new Relationship2(a, b);
                         r->label = mg_value_make_string("vertex_geometry_ptr");
                         r->properties['a'] = mg_value_make_string("vertex_geometry_ptr");
@@ -5269,11 +5265,11 @@ void api_save_neo4j(const Neo4jPart& conn)
     }
 }
 
-void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
+void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalContext& ctx);
 {
     api_delete_history(); //删除默认历史流及其下属公告上的所有实体
-    lastsave_ds = nullptr;
-    ptr2nodeid.clear();
+    ctx.lastsave_ds = nullptr;
+    ctx.ptr2nodeid.clear();
 
     std::unordered_map<int64_t, void*> id2ptr;
 
@@ -5323,7 +5319,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             BODY * body = nullptr;
                             api_body(body);
                             id2ptr[node_id] = body;
-                            ptr2nodeid[body] = node_id;
+                            ctx.ptr2nodeid[body] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::lump:
@@ -5333,7 +5329,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                                 lump = ACIS_NEW LUMP();
                             API_END;
                             id2ptr[node_id] = lump;
-                            ptr2nodeid[lump] = node_id;
+                            ctx.ptr2nodeid[lump] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::shell:
@@ -5343,7 +5339,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                                 shell = ACIS_NEW SHELL();
                             API_END;
                             id2ptr[node_id] = shell;
-                            ptr2nodeid[shell] = node_id;
+                            ctx.ptr2nodeid[shell] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::subshell:
@@ -5353,7 +5349,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                                 subshell = ACIS_NEW SUBSHELL();
                             API_END;
                             id2ptr[node_id] = subshell;
-                            ptr2nodeid[subshell] = node_id;
+                            ctx.ptr2nodeid[subshell] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::face:
@@ -5370,7 +5366,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                                 face->set_cont(mg_value_integer(mg_map_at(node_properties, "d")));
                             }
                             id2ptr[node_id] = face;
-                            ptr2nodeid[face] = node_id;
+                            ctx.ptr2nodeid[face] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::loop:
@@ -5380,7 +5376,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                                 loop = ACIS_NEW LOOP();
                             API_END;
                             id2ptr[node_id] = loop;
-                            ptr2nodeid[loop] = node_id;
+                            ctx.ptr2nodeid[loop] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::wire:
@@ -5391,7 +5387,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             wire->set_cont(mg_value_integer(mg_map_at(node_properties, "b")));
                             id2ptr[node_id] = wire;
-                            ptr2nodeid[wire] = node_id;
+                            ctx.ptr2nodeid[wire] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::coedge:
@@ -5402,7 +5398,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             coedge->set_sense(mg_value_integer(mg_map_at(node_properties, "b")));
                             id2ptr[node_id] = coedge;
-                            ptr2nodeid[coedge] = node_id;
+                            ctx.ptr2nodeid[coedge] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::edge:
@@ -5413,7 +5409,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             edge->set_sense(mg_value_integer(mg_map_at(node_properties, "b")));
                             id2ptr[node_id] = edge;
-                            ptr2nodeid[edge] = node_id;
+                            ctx.ptr2nodeid[edge] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::vertex:
@@ -5423,7 +5419,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                                 vertex = ACIS_NEW VERTEX();
                             API_END;
                             id2ptr[node_id] = vertex;
-                            ptr2nodeid[vertex] = node_id;
+                            ctx.ptr2nodeid[vertex] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::transform:
@@ -5443,7 +5439,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                                 transform = ACIS_NEW TRANSFORM(transform_data);
                             API_END;
                             id2ptr[node_id] = transform;
-                            ptr2nodeid[transform] = node_id;
+                            ctx.ptr2nodeid[transform] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::apoint:
@@ -5455,7 +5451,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                                 point = ACIS_NEW APOINT(coords_data);
                             API_END;
                             id2ptr[node_id] = point;
-                            ptr2nodeid[point] = node_id;
+                            ctx.ptr2nodeid[point] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::straight_curve:
@@ -5475,7 +5471,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             ACIS_DELETE def;
                             id2ptr[node_id] = straight_curve;
-                            ptr2nodeid[straight_curve] = node_id;
+                            ctx.ptr2nodeid[straight_curve] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::ellipse_curve:
@@ -5497,7 +5493,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             ACIS_DELETE def;
                             id2ptr[node_id] = ellipse_curve;
-                            ptr2nodeid[ellipse_curve] = node_id;
+                            ctx.ptr2nodeid[ellipse_curve] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::helix_curve:
@@ -5525,7 +5521,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             ACIS_DELETE def;
                             id2ptr[node_id] = helix_curve;
-                            ptr2nodeid[helix_curve] = node_id;
+                            ctx.ptr2nodeid[helix_curve] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::plane_surface:
@@ -5547,7 +5543,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             ACIS_DELETE def;
                             id2ptr[node_id] = plane_surface;
-                            ptr2nodeid[plane_surface] = node_id;
+                            ctx.ptr2nodeid[plane_surface] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::sphere_surface:
@@ -5570,7 +5566,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             ACIS_DELETE def;
                             id2ptr[node_id] = sphere_surface;
-                            ptr2nodeid[sphere_surface] = node_id;
+                            ctx.ptr2nodeid[sphere_surface] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::torus_surface:
@@ -5594,7 +5590,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             ACIS_DELETE def;
                             id2ptr[node_id] = torus_surface;
-                            ptr2nodeid[torus_surface] = node_id;
+                            ctx.ptr2nodeid[torus_surface] = node_id;
                         }
                         break;
                     case AccessUtils::Restore::Neo4jNode::cone_surface:
@@ -5625,7 +5621,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
                             API_END;
                             ACIS_DELETE def;
                             id2ptr[node_id] = cone_surface;
-                            ptr2nodeid[cone_surface] = node_id;
+                            ctx.ptr2nodeid[cone_surface] = node_id;
                         }
                         break;
                     default:
@@ -6019,7 +6015,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id)
 
     DELTA_STATE* thissave_ds; //这次保存
     api_note_state(thissave_ds);
-    lastsave_ds = thissave_ds;
+    ctx.lastsave_ds = thissave_ds;
 }
 
 
@@ -6288,7 +6284,6 @@ std::tuple<bool, double, double, double, double> AccessTest::CheckTestCase(
     ENTITY_LIST el_restore_neo4j;
     std::vector<int64_t> elemid_list;
     for (ENTITY * e
-
 
 
     :
