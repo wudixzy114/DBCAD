@@ -9,12 +9,12 @@
 #include "common.hxx"
 #include "neo4j.hxx"
 #include "access.hxx"
-#include <glaze/glaze.hpp>
 #include <acis/include/allcurve.hxx>
 #include <acis/include/allsurf.hxx>
 #include <acis/include/alltop.hxx>
+#include <glaze/glaze.hpp>
 #include <acis/include/api.hxx>
-#include <acis/include/cstrapi.hxx>
+#include <acis/include/cstrapi.hxx>m
 #include <acis/include/exct_int.hxx>
 #include <acis/include/exct_spl.hxx>
 #include <acis/include/exp_par.hxx>
@@ -25,6 +25,7 @@
 #include <acis/include/point.hxx>
 #include <acis/include/sps2crtn.hxx>
 #include <acis/include/sps3crtn.hxx>
+
 #include <acis/include/sp3srtn.hxx>
 #include <acis/include/sps3srtn.hxx>
 #include <acis/include/surf_int.hxx>
@@ -1774,7 +1775,6 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
     for (ENTITY * entity_list_item
 
 
-
     :
     entity_list
     )
@@ -2326,7 +2326,7 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
             delete rel;
         }
     }
-    qDebug() << "save_neo4j:" << db_execution_duration;
+    std::cout << "save_neo4j: " << db_execution_duration << " ms" << std::endl;
 }
 
 

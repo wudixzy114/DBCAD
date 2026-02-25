@@ -49,6 +49,7 @@ target_include_directories(project_core PUBLIC
         src
         SYSTEM ${CMAKE_SOURCE_DIR}/thirdparty
         SYSTEM ${ACIS_COMMON_INCLUDE}
+        SYSTEM ${CMAKE_SOURCE_DIR}/thirdparty/glazeA/include
 )
 
 set(ACIS_BIN_DIR "$<$<CONFIG:Debug>:${ACIS_DEBUG_ROOT}/bin>$<$<CONFIG:Release>:${ACIS_RELEASE_ROOT}/bin>")
