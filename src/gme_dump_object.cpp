@@ -336,7 +336,7 @@ void dump_object(FILE* f, int indents, const SPAtransf* transf)
 
 // 几何（持久化）
 
-void dump_object(FILE* f, int indents, APOINT* const entity)
+void dump_object(FILE* f, int indents, class APOINT* const entity)
 {
     if (f && entity)
     {
@@ -346,7 +346,7 @@ void dump_object(FILE* f, int indents, APOINT* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, CURVE* entity)
+void dump_object(FILE* f, int indents, class CURVE* entity)
 {
     if (f && entity)
     {
@@ -360,7 +360,7 @@ void dump_object(FILE* f, int indents, CURVE* entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, PCURVE* entity)
+void dump_object(FILE* f, int indents, class PCURVE* entity)
 {
     if (f && entity)
     {
@@ -375,7 +375,7 @@ void dump_object(FILE* f, int indents, PCURVE* entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, SURFACE* entity)
+void dump_object(FILE* f, int indents, class SURFACE* entity)
 {
     if (f && entity)
     {
@@ -392,7 +392,7 @@ void dump_object(FILE* f, int indents, SURFACE* entity)
         dump_object(f, indents + 1, &entity_box);
         if (type_name.compare("plane") == 0)
         {
-            PLANE * p = (PLANE*)entity;
+            class PLANE* p = (class PLANE*)entity;
             fprintf_tabs(f, indents, "root_point: ");
             dump_object(f, 0, p->root_point());
             fprintf_tabs(f, indents, "normal: ");
@@ -400,14 +400,14 @@ void dump_object(FILE* f, int indents, SURFACE* entity)
         }
         else if (type_name.compare("sphere") == 0)
         {
-            SPHERE * s = (SPHERE*)entity;
+            class SPHERE* s = (class SPHERE*)entity;
             fprintf_tabs(f, indents, "centre: ");
             dump_object(f, 0, s->centre());
             fprintf_tabs(f, indents, "radius: %f\n", s->radius());
         }
         else if (type_name.compare("cone") == 0)
         {
-            CONE * c = (CONE*)entity;
+            class CONE* c = (class CONE*)entity;
             fprintf_tabs(f, indents, "root_point: ");
             dump_object(f, 0, c->root_point());
             fprintf_tabs(f, indents, "direction: ");
@@ -420,7 +420,7 @@ void dump_object(FILE* f, int indents, SURFACE* entity)
         }
         else if (type_name.compare("torus") == 0)
         {
-            TORUS * t = (TORUS*)entity;
+            class TORUS* t = (class TORUS*)entity;
             fprintf_tabs(f, indents, "centre: ");
             dump_object(f, 0, t->centre());
             fprintf_tabs(f, indents, "normal: ");
@@ -430,14 +430,14 @@ void dump_object(FILE* f, int indents, SURFACE* entity)
         }
         else if (type_name.ends_with("spline") == 0)
         {
-            SPLINE * s = (SPLINE*)entity;
+            class SPLINE* s = (class SPLINE*)entity;
             fprintf_tabs(f, indents, "equation:\n");
             dump_object(f, indents + 1, &s->equation());
         }
         else if (type_name.compare("meshsurf") == 0)
         {
             /* @todo: 暂未实现*/
-            MESHSURF * p = (MESHSURF*)entity;
+            class MESHSURF* p = (class MESHSURF*)entity;
             fprintf_tabs(f, indents, "暂未实现\n");
         }
     }
@@ -445,7 +445,7 @@ void dump_object(FILE* f, int indents, SURFACE* entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, TRANSFORM* entity)
+void dump_object(FILE* f, int indents, class TRANSFORM* entity)
 {
     if (f && entity)
     {
@@ -459,7 +459,7 @@ void dump_object(FILE* f, int indents, TRANSFORM* entity)
 
 // 拓扑
 
-void dump_object(FILE* f, int indents, VERTEX* const entity)
+void dump_object(FILE* f, int indents, class VERTEX* const entity)
 {
     if (f && entity)
     {
@@ -480,7 +480,7 @@ void dump_object(FILE* f, int indents, VERTEX* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, EDGE* const entity)
+void dump_object(FILE* f, int indents, class EDGE* const entity)
 {
     if (f && entity)
     {
@@ -509,7 +509,7 @@ void dump_object(FILE* f, int indents, EDGE* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, COEDGE* const entity)
+void dump_object(FILE* f, int indents, class COEDGE* const entity)
 {
     if (f && entity)
     {
@@ -524,14 +524,14 @@ void dump_object(FILE* f, int indents, COEDGE* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, WIRE* const entity)
+void dump_object(FILE* f, int indents, class WIRE* const entity)
 {
     if (f && entity)
     {
         fprintf_tabs(f, indents, "identity: %d\n", entity->identity());
         int index_coedge = 0;
-        COEDGE * ptrCoedge_start = entity->coedge();
-        COEDGE * ptrCoedge = ptrCoedge_start;
+        class COEDGE* ptrCoedge_start = entity->coedge();
+        class COEDGE* ptrCoedge = ptrCoedge_start;
         while (ptrCoedge)
         {
             fprintf_tabs(f, indents, "COEDGE %d:\n", index_coedge);
@@ -545,15 +545,15 @@ void dump_object(FILE* f, int indents, WIRE* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, LOOP* const entity)
+void dump_object(FILE* f, int indents, class LOOP* const entity)
 {
     if (f && entity)
     {
         fprintf_tabs(f, indents, "identity: %d\n", entity->identity());
         fprintf_tabs(f, indents, "classification: %d\n", entity->get_classification());
         int index_coedge = 0;
-        COEDGE * ptrCoedge_start = entity->start();
-        COEDGE * ptrCoedge = ptrCoedge_start;
+        class COEDGE* ptrCoedge_start = entity->start();
+        class COEDGE* ptrCoedge = ptrCoedge_start;
         while (ptrCoedge)
         {
             fprintf_tabs(f, indents, "COEDGE %d:\n", index_coedge);
@@ -567,7 +567,7 @@ void dump_object(FILE* f, int indents, LOOP* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, FACE* const entity)
+void dump_object(FILE* f, int indents, class FACE* const entity)
 {
     if (f && entity)
     {
@@ -576,7 +576,7 @@ void dump_object(FILE* f, int indents, FACE* const entity)
         fprintf_tabs(f, indents, "cont: %d\n", entity->cont());
         fprintf_tabs(f, indents, "sides: %d\n", entity->sides());
         int index_loop = 0;
-        LOOP * ptrLoop = entity->loop();
+        class LOOP* ptrLoop = entity->loop();
         while (ptrLoop)
         {
             fprintf_tabs(f, indents, "LOOP %d:\n", index_loop);
@@ -584,7 +584,7 @@ void dump_object(FILE* f, int indents, FACE* const entity)
             ptrLoop = ptrLoop->next();
             index_loop += 1;
         }
-        SURFACE * ptrSurface = entity->geometry();
+        class SURFACE* ptrSurface = entity->geometry();
         if (ptrSurface)
         {
             fprintf_tabs(f, indents, "geometry:\n");
@@ -595,13 +595,13 @@ void dump_object(FILE* f, int indents, FACE* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, SUBSHELL* const entity)
+void dump_object(FILE* f, int indents, class SUBSHELL* const entity)
 {
     if (f && entity)
     {
         fprintf_tabs(f, indents, "identity: %d\n", entity->identity());
         int index_subshell = 0;
-        SUBSHELL * ptrSubshell = entity->child();
+        class SUBSHELL* ptrSubshell = entity->child();
         while (ptrSubshell)
         {
             fprintf_tabs(f, indents, "SUBSHELL %d:\n", index_subshell);
@@ -610,7 +610,7 @@ void dump_object(FILE* f, int indents, SUBSHELL* const entity)
             index_subshell += 1;
         }
         int index_face = 0;
-        FACE * ptrFace = entity->face_list();
+        class FACE* ptrFace = entity->face_list();
         while (ptrFace)
         {
             fprintf_tabs(f, indents, "FACE %d:\n", index_face);
@@ -619,7 +619,7 @@ void dump_object(FILE* f, int indents, SUBSHELL* const entity)
             index_face += 1;
         }
         int index_wire = 0;
-        WIRE * ptrWire = entity->wire_list();
+        class WIRE* ptrWire = entity->wire_list();
         while (ptrWire)
         {
             fprintf_tabs(f, indents, "WIRE %d:\n", index_wire);
@@ -632,13 +632,13 @@ void dump_object(FILE* f, int indents, SUBSHELL* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, SHELL* const entity)
+void dump_object(FILE* f, int indents, class SHELL* const entity)
 {
     if (f && entity)
     {
         fprintf_tabs(f, indents, "identity: %d\n", entity->identity());
         int index_subshell = 0;
-        SUBSHELL * ptrSubshell = entity->subshell();
+        class SUBSHELL* ptrSubshell = entity->subshell();
         while (ptrSubshell)
         {
             fprintf_tabs(f, indents, "SUBSHELL %d:\n", index_subshell);
@@ -647,7 +647,7 @@ void dump_object(FILE* f, int indents, SHELL* const entity)
             index_subshell += 1;
         }
         int index_face = 0;
-        FACE * ptrFace = entity->face_list();
+        class FACE* ptrFace = entity->face_list();
         while (ptrFace)
         {
             fprintf_tabs(f, indents, "FACE %d:\n", index_face);
@@ -656,7 +656,7 @@ void dump_object(FILE* f, int indents, SHELL* const entity)
             index_face += 1;
         }
         int index_wire = 0;
-        WIRE * ptrWire = entity->wire_list();
+        class WIRE* ptrWire = entity->wire_list();
         while (ptrWire)
         {
             fprintf_tabs(f, indents, "WIRE %d:\n", index_wire);
@@ -669,13 +669,13 @@ void dump_object(FILE* f, int indents, SHELL* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, int indents, LUMP* const entity)
+void dump_object(FILE* f, int indents, class LUMP* const entity)
 {
     if (f && entity)
     {
         fprintf_tabs(f, indents, "identity: %d\n", entity->identity());
         int index_shell = 0;
-        SHELL * ptrShell = entity->shell();
+        class SHELL* ptrShell = entity->shell();
         while (ptrShell)
         {
             fprintf_tabs(f, indents, "SHELL %d:\n", index_shell);
@@ -688,7 +688,7 @@ void dump_object(FILE* f, int indents, LUMP* const entity)
         fprintf_tabs(f, indents, "nullptr\n");
 }
 
-void dump_object(FILE* f, const char* info, BODY* const entity)
+void dump_object(FILE* f, const char* info, class BODY* const entity)
 {
     if (f)
     {
@@ -697,7 +697,7 @@ void dump_object(FILE* f, const char* info, BODY* const entity)
         fprintf(f, ctime(&now));
         fprintf(f, "Topic: %s\n", info);
         fprintf(f, "==============================BODY==============================\n");
-        LUMP * ptrLump = entity->lump();
+        class LUMP* ptrLump = entity->lump();
         int index_lump = 0;
         int indents = 0;
         while (ptrLump)
@@ -707,7 +707,7 @@ void dump_object(FILE* f, const char* info, BODY* const entity)
             ptrLump = ptrLump->next();
             index_lump += 1;
         }
-        WIRE * ptrWire = entity->wire();
+        class WIRE* ptrWire = entity->wire();
         int index_wire = 0;
         while (ptrWire)
         {
@@ -727,68 +727,70 @@ void dump_object(FILE* f, const char* info, BODY* const entity)
     }
 }
 
-void dump_object(FILE* f, const char* info, int indents, ENTITY* const entity)
+void dump_object(FILE* f, const char* info, int indents, class ENTITY* const entity)
 {
     std::string type_name = entity->type_name();
     if (!type_name.compare("body"))
     {
-        dump_object(f, info, (BODY*)entity);
+        dump_object(f, info, (class BODY*)entity);
     }
     else if (!type_name.compare("lump"))
     {
-        dump_object(f, indents, (LUMP*)entity);
+        dump_object(f, indents, (class LUMP*)entity);
     }
     else if (!type_name.compare("shell"))
     {
-        dump_object(f, indents, (SHELL*)entity);
+        dump_object(f, indents, (class SHELL*)entity);
     }
     else if (!type_name.compare("subshell"))
     {
-        dump_object(f, indents, (SUBSHELL*)entity);
+        dump_object(f, indents, (class SUBSHELL*)entity);
     }
     else if (!type_name.compare("face"))
     {
-        dump_object(f, indents, (FACE*)entity);
+        dump_object(f, indents, (class FACE*)entity);
     }
     else if (!type_name.compare("loop"))
     {
-        dump_object(f, indents, (LOOP*)entity);
+        dump_object(f, indents, (class LOOP*)entity);
     }
     else if (!type_name.compare("wire"))
     {
-        dump_object(f, indents, (WIRE*)entity);
+        dump_object(f, indents, (class WIRE*)entity);
     }
     else if (!type_name.compare("coedge"))
     {
-        dump_object(f, indents, (COEDGE*)entity);
+        dump_object(f, indents, (class COEDGE*)
+                    entity
+        );
     }
     else if (!type_name.compare("edge"))
     {
-        dump_object(f, indents, (EDGE*)entity);
+        dump_object(f, indents, (class EDGE*)entity);
     }
     else if (!type_name.compare("vertex"))
     {
-        dump_object(f, indents, (VERTEX*)entity);
+        dump_object(f, indents, (class VERTEX*)entity);
     }
     else if (!type_name.compare("apoint"))
     {
-        dump_object(f, indents, (APOINT*)entity);
+        dump_object(f, indents, (class APOINT*)entity);
     }
     else if (!type_name.compare("curve"))
     {
-        dump_object(f, indents, (CURVE*)entity);
+        dump_object(f, indents, (class CURVE*)entity);
     }
     else if (!type_name.compare("pcurve"))
     {
-        dump_object(f, indents, (PCURVE*)entity);
+        dump_object(f, indents, (class PCURVE*)entity);
     }
     else if (!type_name.compare("surface"))
     {
-        dump_object(f, indents, (SURFACE*)entity);
+        dump_object(f, indents, (class SURFACE*)entity);
     }
     else if (!type_name.compare("transform"))
     {
-        dump_object(f, indents, (TRANSFORM*)entity);
+        dump_object(f, indents, (class TRANSFORM*)entity);
     }
     else
     {
@@ -796,7 +798,7 @@ void dump_object(FILE* f, const char* info, int indents, ENTITY* const entity)
     }
 }
 
-void print_statistic(ENTITY* e)
+void print_statistic(class ENTITY* e)
 {
     printf("*****Statistic of Entity*****\n");
     if (!e)
