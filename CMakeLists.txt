@@ -7,8 +7,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 
-set(ACIS_RELEASE_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis/win_b64/code")
-set(ACIS_DEBUG_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis/win_b64_debug/code")
+set(ACIS_RELEASE_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis/lib")
+set(ACIS_DEBUG_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis/lib")
 set(ACIS_COMMON_INCLUDE "${CMAKE_SOURCE_DIR}/thirdparty/acis/include")
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
@@ -22,29 +22,38 @@ if (MSVC)
             /Zc:__cplusplus
     )
     target_compile_definitions(project_core PUBLIC
+            # ---- 你原有的自定义/业务宏 ----
             _CRT_SECURE_NO_WARNINGS
-            _WINDOWS
-            _WINDOWS_SOURCE
-            _CAT_ANSI_STREAMS
-            CAT_ENABLE_NATIVE_EXCEPTION
-            SPAACISDS
-            PLATEFORME_DS64
+
+            # ---- ACIS 文档强制要求的预处理器宏 ----
+            _WINDOWS               # MS specific
+            _WINDOWS_SOURCE        # MS specific
+            NT_VC16_64             # 定义基础架构为 VS2019 x64
+            #            SPA_NO_AUTO_LINK       # 禁用 ACIS 库自动链接（因为我们在下面手动链接了）
+            _WIN32_WINNT=0x0600    # 定义主要操作系统版本
+
+            # Debug 专属宏
             $<$<CONFIG:Debug>:SPA_DEBUG>
+            $<$<CONFIG:Debug>:NT_VC16_64_DLLD>
+
+            # Release 专属宏
+            $<$<CONFIG:Release>:NDEBUG>
+            $<$<CONFIG:Release>:NT_VC16_64_DLL>
     )
     target_link_options(project_core INTERFACE
             /STACK:4194304
-            /MACHINE:x64
+            /MACHINE:AMD64
     )
 endif ()
 target_link_libraries(project_core PUBLIC
-        $<$<CONFIG:Debug>:${ACIS_DEBUG_ROOT}/lib/SPAAcisDs.lib>
-        $<$<CONFIG:Release>:${ACIS_RELEASE_ROOT}/lib/SPAAcisDs.lib>
+        $<$<CONFIG:Debug>:${ACIS_DEBUG_ROOT}/lib/SpaACIS.lib>
+        $<$<CONFIG:Release>:${ACIS_RELEASE_ROOT}/lib/SpaACISd.lib>
 )
-target_link_directories(project_core
-        PUBLIC
-        $<$<CONFIG:Debug>:${ACIS_DEBUG_ROOT}/lib>
-        $<$<CONFIG:Release>:${ACIS_RELEASE_ROOT}/lib>
-)
+#target_link_directories(project_core
+#        PUBLIC
+#        $<$<CONFIG:Debug>:${ACIS_DEBUG_ROOT}/lib>
+#        $<$<CONFIG:Release>:${ACIS_RELEASE_ROOT}/lib>
+#)
 target_include_directories(project_core PUBLIC
         src
         SYSTEM ${CMAKE_SOURCE_DIR}/thirdparty
