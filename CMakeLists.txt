@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 4.1)
 project(DBCAD255)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 
-set(ACIS_RELEASE_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis/lib")
-set(ACIS_DEBUG_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis/lib")
+set(ACIS_RELEASE_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis")
+set(ACIS_DEBUG_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis")
 set(ACIS_COMMON_INCLUDE "${CMAKE_SOURCE_DIR}/thirdparty/acis/include")
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
@@ -18,11 +18,17 @@ add_library(project_core STATIC ${SOURCES} ${HEADERS})
 if (MSVC)
     target_compile_options(project_core PUBLIC
             /utf-8
-            /EHa
             /Zc:__cplusplus
+            /Zc:wchar_t     # VS: /Zc:wchar_t
+            /Zc:inline      # VS: /Zc:inline
+            /MP             # 多核编译
+    )
+    target_compile_definitions(project_core PRIVATE
+            _CRT_SECURE_NO_WARNINGS
+            WIN32_LEAN_AND_MEAN
+            UNICODE _UNICODE  # Windows 现代开发通常默认开启
     )
     target_compile_definitions(project_core PUBLIC
-            # ---- 你原有的自定义/业务宏 ----
             _CRT_SECURE_NO_WARNINGS
 
             # ---- ACIS 文档强制要求的预处理器宏 ----
@@ -45,20 +51,33 @@ if (MSVC)
             /MACHINE:AMD64
     )
 endif ()
-target_link_libraries(project_core PUBLIC
-        $<$<CONFIG:Debug>:${ACIS_DEBUG_ROOT}/lib/SpaACIS.lib>
-        $<$<CONFIG:Release>:${ACIS_RELEASE_ROOT}/lib/SpaACISd.lib>
+target_link_libraries(project_core PRIVATE
+        opengl32.lib
+        ws2_32.lib
+        legacy_stdio_definitions.lib
+
+        # 相对路径库 (基于 target_link_directories 中的 ../_deps)
+        glfw/lib/glfw3_64.lib
+        libpqxx-7.10.1/lib/libpq.lib
+
+        # --- Debug 专用库 ---
+        $<$<CONFIG:Debug>:acis/lib/SpaACISd.lib>
+        $<$<CONFIG:Debug>:openssl/lib/libssl64MDd.lib>
+        $<$<CONFIG:Debug>:openssl/lib/libcrypto64MDd.lib>
+        $<$<CONFIG:Debug>:libpqxx-7.10.1/lib/pqxxd.lib>
+
+        # --- Release 专用库 ---
+        $<$<CONFIG:Release>:acis/lib/SpaACIS.lib>
+        $<$<CONFIG:Release>:openssl/lib/libssl64MD.lib>
+        $<$<CONFIG:Release>:openssl/lib/libcrypto64MD.lib>
+        $<$<CONFIG:Release>:libpqxx-7.10.1/lib/pqxx.lib>
 )
-#target_link_directories(project_core
-#        PUBLIC
-#        $<$<CONFIG:Debug>:${ACIS_DEBUG_ROOT}/lib>
-#        $<$<CONFIG:Release>:${ACIS_RELEASE_ROOT}/lib>
-#)
-target_include_directories(project_core PUBLIC
+
+target_include_directories(project_core SYSTEM PUBLIC
         src
-        SYSTEM ${CMAKE_SOURCE_DIR}/thirdparty
-        SYSTEM ${ACIS_COMMON_INCLUDE}
-        SYSTEM ${CMAKE_SOURCE_DIR}/thirdparty/glazeA/include
+        ${CMAKE_SOURCE_DIR}/thirdparty
+        ${ACIS_COMMON_INCLUDE}
+        ${CMAKE_SOURCE_DIR}/thirdparty/glazeA/include
 )
 
 set(ACIS_BIN_DIR "$<$<CONFIG:Debug>:${ACIS_DEBUG_ROOT}/bin>$<$<CONFIG:Release>:${ACIS_RELEASE_ROOT}/bin>")

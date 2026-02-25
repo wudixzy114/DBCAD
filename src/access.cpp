@@ -15,6 +15,7 @@
 #include <glaze/glaze.hpp>
 #include <acis/include/api.hxx>
 #include <acis/include/cstrapi.hxx>m
+#include <acis/include/int_int.hxx>
 #include <acis/include/exct_int.hxx>
 #include <acis/include/exct_spl.hxx>
 #include <acis/include/exp_par.hxx>
@@ -4608,7 +4609,7 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
         for (auto ptr : updated_entity_list)
         {
             mg_list* mgl_ptr_list = mg_list_make_empty(2);
-            mg_list_append(mgl_ptr_list, mg_value_make_integerctx.(ptr2nodeid.at(ptr)));
+            mg_list_append(mgl_ptr_list, mg_value_make_integer(ctx.ptr2nodeid.at(ptr)));
             mg_list_append(mgl_ptr_list, mg_value_make_integer(ptr2node.at(ptr)->id));
             mg_list_append(mgl_param_list, mg_value_make_list(mgl_ptr_list));
         }
@@ -5264,7 +5265,7 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
     }
 }
 
-void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalContext& ctx);
+void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalContext& ctx)
 {
     api_delete_history(); //删除默认历史流及其下属公告上的所有实体
     ctx.lastsave_ds = nullptr;
