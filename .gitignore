@@ -3,3 +3,5 @@ cmake-build-debug-visual-studio-2022
 thirdparty/**
 dynamic/SpaACIS.dll
 dynamic/SpaACISd.dll
+release/SpaACISd.dll
+release/SpaACIS.dll

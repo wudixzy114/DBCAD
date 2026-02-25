@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 
+
 struct IncrementalContext
 {
     class DELTA_STATE* lastsave_ds = nullptr;

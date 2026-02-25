@@ -11,10 +11,42 @@ set(ACIS_RELEASE_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis")
 set(ACIS_DEBUG_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/acis")
 set(ACIS_COMMON_INCLUDE "${CMAKE_SOURCE_DIR}/thirdparty/acis/include")
 
-file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "src/*.h")
+include(FetchContent)
+FetchContent_Declare(
+        pybind11
+        GIT_REPOSITORY https://github.com/pybind/pybind11.git
+        GIT_TAG v3.0.2  # 可以指定最新稳定版
+)
+FetchContent_MakeAvailable(pybind11)
+set(BINDING_SOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/DbcadAPI.cpp"
+)
 
-add_library(project_core SHARED ${SOURCES} ${HEADERS})
+set(CORE_SOURCES
+        src/acis.cpp
+        src/access.cpp
+        src/common.cpp
+        src/gme_dump_object.cpp
+        src/gme_mesh.cpp
+        src/neo4j.cpp
+        src/DbcadAPI.cpp
+)
+set(CORE_HEADERS
+        src/acis.hxx
+        src/access.hxx
+        src/common.hxx
+        src/gme_dump_object.hxx
+        src/gme_mesh.hxx
+        src/neo4j.hxx
+        # 注意：DbcadAPI.h 如果包含 pybind 代码，不要放这里；
+        # 如果只是纯 C++ 接口声明，可以放这里。暂时先放这里方便 IDE 查看。
+        src/DbcadAPI.h
+)
+set(BINDING_SOURCES
+        src/bindings.cpp
+)
+
+add_library(project_core SHARED ${CORE_SOURCES} ${CORE_HEADERS})
 target_compile_definitions(project_core PRIVATE DBCAD_EXPORTS)
 if (MSVC)
     target_compile_options(project_core PUBLIC
@@ -24,13 +56,12 @@ if (MSVC)
             /Zc:inline      # VS: /Zc:inline
             /MP             # 多核编译
     )
-    target_compile_definitions(project_core PRIVATE
+    target_compile_definitions(project_core PUBLIC
             _CRT_SECURE_NO_WARNINGS
             WIN32_LEAN_AND_MEAN
             UNICODE _UNICODE  # Windows 现代开发通常默认开启
     )
     target_compile_definitions(project_core PUBLIC
-            _CRT_SECURE_NO_WARNINGS
 
             # ---- ACIS 文档强制要求的预处理器宏 ----
             _WINDOWS               # MS specific
@@ -52,7 +83,7 @@ if (MSVC)
             /MACHINE:AMD64
     )
 endif ()
-target_link_libraries(project_core PRIVATE
+target_link_libraries(project_core PUBLIC
         opengl32.lib
         ws2_32.lib
         legacy_stdio_definitions.lib
@@ -98,3 +129,12 @@ get_target_property(TEMP_CORE_DEFS project_core COMPILE_DEFINITIONS)
 message(STATUS "[Macros]   project_core Definitions: ${TEMP_CORE_DEFS}")
 message(STATUS "==========================================================")
 
+
+# 使用 pybind11 提供的函数创建模块
+pybind11_add_module(PyDbcad ${BINDING_SOURCES})
+
+# 关键：让 Python 模块链接到你的核心库和 ACIS 等
+target_link_libraries(PyDbcad PRIVATE project_core)
+
+message(STATUS "Core Sources: ${CORE_SOURCES}")
+message(STATUS "Binding Sources: ${BINDING_SOURCES}")
