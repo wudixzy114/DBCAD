@@ -14,7 +14,8 @@ set(ACIS_COMMON_INCLUDE "${CMAKE_SOURCE_DIR}/thirdparty/acis/include")
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "src/*.h")
 
-add_library(project_core STATIC ${SOURCES} ${HEADERS})
+add_library(project_core SHARED ${SOURCES} ${HEADERS})
+target_compile_definitions(project_core PRIVATE DBCAD_EXPORTS)
 if (MSVC)
     target_compile_options(project_core PUBLIC
             /utf-8
@@ -35,7 +36,7 @@ if (MSVC)
             _WINDOWS               # MS specific
             _WINDOWS_SOURCE        # MS specific
             NT_VC16_64             # 定义基础架构为 VS2019 x64
-            #            SPA_NO_AUTO_LINK       # 禁用 ACIS 库自动链接（因为我们在下面手动链接了）
+            SPA_NO_AUTO_LINK       # 禁用 ACIS 库自动链接（因为我们在下面手动链接了）
             _WIN32_WINNT=0x0600    # 定义主要操作系统版本
 
             # Debug 专属宏
@@ -56,21 +57,15 @@ target_link_libraries(project_core PRIVATE
         ws2_32.lib
         legacy_stdio_definitions.lib
 
-        # 相对路径库 (基于 target_link_directories 中的 ../_deps)
-        glfw/lib/glfw3_64.lib
-        libpqxx-7.10.1/lib/libpq.lib
+        # --- Debug 专用库 --- 使用绝对路径防止 CMake 误加后缀
+        $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/thirdparty/acis/lib/SpaACISd.lib>
+        $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/thirdparty/openssl/lib/libssl64MDd.lib>
+        $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/thirdparty/openssl/lib/libcrypto64MDd.lib>
 
-        # --- Debug 专用库 ---
-        $<$<CONFIG:Debug>:acis/lib/SpaACISd.lib>
-        $<$<CONFIG:Debug>:openssl/lib/libssl64MDd.lib>
-        $<$<CONFIG:Debug>:openssl/lib/libcrypto64MDd.lib>
-        $<$<CONFIG:Debug>:libpqxx-7.10.1/lib/pqxxd.lib>
-
-        # --- Release 专用库 ---
-        $<$<CONFIG:Release>:acis/lib/SpaACIS.lib>
-        $<$<CONFIG:Release>:openssl/lib/libssl64MD.lib>
-        $<$<CONFIG:Release>:openssl/lib/libcrypto64MD.lib>
-        $<$<CONFIG:Release>:libpqxx-7.10.1/lib/pqxx.lib>
+        # --- Release 专用库 --- 使用绝对路径
+        $<$<CONFIG:Release>:${CMAKE_SOURCE_DIR}/thirdparty/acis/lib/SpaACIS.lib>
+        $<$<CONFIG:Release>:${CMAKE_SOURCE_DIR}/thirdparty/openssl/lib/libssl64MD.lib>
+        $<$<CONFIG:Release>:${CMAKE_SOURCE_DIR}/thirdparty/openssl/lib/libcrypto64MD.lib>
 )
 
 target_include_directories(project_core SYSTEM PUBLIC

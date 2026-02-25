@@ -21,7 +21,6 @@ struct IncrementalContext
     class DELTA_STATE* lastsave_ds = nullptr;
     std::unordered_map<void*, int64_t> ptr2nodeid;
 };
-
 namespace dbcad
 {
     bool InitializeEnvironment()

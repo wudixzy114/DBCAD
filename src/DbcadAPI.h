@@ -1,5 +1,17 @@
 #pragma once
 
+// 针对 Windows 平台的导出宏设置
+#if defined(_WIN32) || defined(_WIN64)
+#ifdef DBCAD_EXPORTS // 如果定义了这个宏，说明我们正在"编译"这个库
+#define DBCAD_API __declspec(dllexport)
+#else                // 如果没有定义，说明是第三方正在"使用"这个库
+#define DBCAD_API __declspec(dllimport)
+#endif
+#else
+// Linux/Mac 环境下设为空
+#define DBCAD_API
+#endif
+
 #include <string>
 #include <memory>
 
@@ -8,6 +20,7 @@ class ENTITY_LIST;
 
 // 引入 Mesh 数据结构
 #include "gme_mesh.hxx"
+
 
 namespace dbcad
 {
@@ -21,11 +34,11 @@ namespace dbcad
     };
 
     // 系统初始化与清理（对应 initialize_acis 和 terminate_acis）
-    bool InitializeEnvironment();
-    void TerminateEnvironment();
+    DBCAD_API bool InitializeEnvironment();
+    DBCAD_API void TerminateEnvironment();
 
     // 核心管理器类
-    class ModelerSession
+    class DBCAD_API ModelerSession
     {
     public:
         ModelerSession(const DbConfig& config, const std::string& partName);
