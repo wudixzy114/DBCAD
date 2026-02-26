@@ -29,19 +29,19 @@ void Neo4jPart::execute_bolt(const char* statement, const mg_map* parameters) co
 {
     if (!session)
     {
-        // 如果 session 为空，直接返回或打印错误，不要执行 mg_run
         myerror("尝试在无效的会话上执行 Bolt 查询。");
         return;
     }
+    // 修复点：出错时不要在这里销毁 session，抛出异常即可，析构函数会自动安全销毁
     if (mg_session_run(session, statement, parameters, NULL, NULL, NULL) < 0)
     {
-        mg_session_destroy(session);
-        myerror(std::format("执行Cypher语句失败，错误信息如下：{}", mg_session_error(session)));
+        const char* err = mg_session_error(session);
+        myerror(std::format("执行Cypher语句失败: {}", err ? err : "Unknown error"));
     }
     if (mg_session_pull(session, NULL) < 0)
     {
-        mg_session_destroy(session);
-        myerror(std::format("拉取Cypher语句执行结果失败，错误信息如下：{}", mg_session_error(session)));
+        const char* err = mg_session_error(session);
+        myerror(std::format("拉取Cypher语句执行结果失败: {}", err ? err : "Unknown error"));
     }
 }
 
