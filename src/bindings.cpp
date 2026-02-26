@@ -4,6 +4,9 @@
 #include "gme_mesh.hxx"
 #include "lists.hxx"
 
+#include "acis/include/kernapi.hxx"
+#include "acis/include/cstrapi.hxx"
+
 namespace py = pybind11;
 
 py::dict MeshDataToDict(const GmeMesh::DisplayData& dd)
@@ -31,7 +34,8 @@ PYBIND11_MODULE(PyDbcad, m)
     m.def("terminate_env", &dbcad::TerminateEnvironment, "Terminate ACIS and MgClient");
 
     py::class_<ENTITY_LIST>(m, "EntityList")
-        .def(py::init<>());
+        .def(py::init<>())
+        .def("count", &ENTITY_LIST::iteration_count, "Get the number of entities in the list");
 
     // 4. 导出 ModelerSession 类
     py::class_<dbcad::ModelerSession>(m, "ModelerSession")
@@ -45,24 +49,50 @@ PYBIND11_MODULE(PyDbcad, m)
             return list;
         }, py::return_value_policy::take_ownership)
 
-        // 全量加载
-        .def("load_full", [](const dbcad::ModelerSession& self)
+
+        .def("check_exists", &dbcad::ModelerSession::CheckPartExists)
+
+        // 全量保存与读取
+        .def("save_full", [](dbcad::ModelerSession& self, ENTITY_LIST& el)
+        {
+            self.SavePartFull(el);
+        })
+        .def("load_full", [](dbcad::ModelerSession& self)
         {
             auto* list = new ENTITY_LIST();
             self.LoadPartFull(*list);
             return list;
         }, py::return_value_policy::take_ownership)
 
-        // 保存
+        // 增量保存与读取
         .def("save_incremental", &dbcad::ModelerSession::SavePartIncremental)
+        .def("load_incremental", [](dbcad::ModelerSession& self, int gen)
+        {
+            auto* list = new ENTITY_LIST();
+            self.LoadPartIncremental(gen, *list);
+            return list;
+        }, py::return_value_policy::take_ownership)
 
-        // 获取网格数据 (这是关键，直接返回 Python 字典)
+        // 提取网格渲染数据
         .def("get_mesh_data", [](dbcad::ModelerSession& self, ENTITY_LIST& el)
         {
             GmeMesh::DisplayData dd;
-            bool success = self.GenerateMesh(el, dd);
-            if (!success) throw std::runtime_error("Failed to generate mesh");
+            if (!self.GenerateMesh(el, dd))
+            {
+                throw std::runtime_error("Failed to generate mesh. Entity list might be empty or invalid.");
+            }
             return MeshDataToDict(dd);
+        })
+
+        // 测试专用：在当前历史流中创建一个立方体
+        .def("create_test_block", [](dbcad::ModelerSession& self, double w, double d, double h)
+        {
+            class BODY* block = nullptr;
+            API_BEGIN;
+                // 调用 ACIS API 创建长方体
+                api_solid_block(SPAposition(0, 0, 0), SPAposition(w, d, h), block);
+            API_END;
+            if (!result.ok()) throw std::runtime_error("Failed to create ACIS test block");
         });
 }
 
