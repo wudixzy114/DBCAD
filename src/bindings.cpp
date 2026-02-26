@@ -41,14 +41,12 @@ PYBIND11_MODULE(PyDbcad, m)
     py::class_<dbcad::ModelerSession>(m, "ModelerSession")
         .def(py::init<const dbcad::DbConfig&, const std::string&>())
 
-        // 增量加载
-        .def("load_incremental", [](const dbcad::ModelerSession& self, int generation)
+        .def("get_active_entities", [](dbcad::ModelerSession& self)
         {
-            auto* list = new ENTITY_LIST(); // 在堆上创建，交由 Python 管理生命周期
-            self.LoadPartIncremental(generation, *list);
+            auto* list = new ENTITY_LIST();
+            self.GetActiveEntities(*list);
             return list;
         }, py::return_value_policy::take_ownership)
-
 
         .def("check_exists", &dbcad::ModelerSession::CheckPartExists)
 
