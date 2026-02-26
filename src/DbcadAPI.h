@@ -1,15 +1,15 @@
 #pragma once
 
-// 针对 Windows 平台的导出宏设置
-#if defined(_WIN32) || defined(_WIN64)
-#ifdef DBCAD_EXPORTS // 如果定义了这个宏，说明我们正在"编译"这个库
+// 增加静态库判断
+#ifdef PROJECT_CORE_STATIC
+#define DBCAD_API // 静态库模式下，宏为空
+#else
+// 动态库模式
+#ifdef DBCAD_EXPORTS
 #define DBCAD_API __declspec(dllexport)
-#else                // 如果没有定义，说明是第三方正在"使用"这个库
+#else
 #define DBCAD_API __declspec(dllimport)
 #endif
-#else
-// Linux/Mac 环境下设为空
-#define DBCAD_API
 #endif
 
 #include <string>

@@ -46,8 +46,9 @@ set(BINDING_SOURCES
         src/bindings.cpp
 )
 
-add_library(project_core SHARED ${CORE_SOURCES} ${CORE_HEADERS})
-target_compile_definitions(project_core PRIVATE DBCAD_EXPORTS)
+add_library(project_core STATIC ${CORE_SOURCES} ${CORE_HEADERS})
+target_compile_definitions(project_core PUBLIC PROJECT_CORE_STATIC)
+#target_compile_definitions(project_core PRIVATE DBCAD_EXPORTS)
 if (MSVC)
     target_compile_options(project_core PUBLIC
             /utf-8
@@ -86,7 +87,6 @@ endif ()
 target_link_libraries(project_core PUBLIC
         opengl32.lib
         ws2_32.lib
-        legacy_stdio_definitions.lib
 
         # --- Debug 专用库 --- 使用绝对路径防止 CMake 误加后缀
         $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/thirdparty/acis/lib/SpaACISd.lib>
