@@ -11,7 +11,6 @@
 #include "access.hxx"
 #include <acis/include/allcurve.hxx>
 #include <acis/include/allsurf.hxx>
-#include <acis/include/alltop.hxx>
 #include <glaze/glaze.hpp>
 #include <acis/include/api.hxx>
 #include <acis/include/cstrapi.hxx>
@@ -27,9 +26,7 @@
 #include <acis/include/sps2crtn.hxx>
 #include <acis/include/sps3crtn.hxx>
 
-#include <acis/include/sp3srtn.hxx>
 #include <acis/include/sps3srtn.hxx>
-#include <acis/include/surf_int.hxx>
 #include <acis/include/transfrm.hxx>
 #include <acis/include/bulletin.hxx>
 
@@ -40,7 +37,7 @@ public:
     mg_list* labels;
     std::unordered_map<char, mg_value*> properties;
 
-    Node()
+    Node() : id(0), labels(nullptr)
     {
     }
 };
@@ -53,7 +50,7 @@ public:
     mg_value* label;
     std::unordered_map<char, mg_value*> properties;
 
-    Relationship(Node* u1, Node* v1) : u(u1), v(v1)
+    Relationship(Node* u1, Node* v1) : u(u1), v(v1), label(nullptr)
     {
     }
 };
@@ -63,7 +60,7 @@ class Relationship2
 public:
     int64_t uid;
     int64_t vid;
-    mg_value* label;
+    mg_value* label{};
     std::unordered_map<char, mg_value*> properties;
 
     Relationship2(int64_t uid1, int64_t vid1) : uid(uid1), vid(vid1)
@@ -86,8 +83,8 @@ struct glz_wire
 
 struct glz_face
 {
-    int sense;
-    int sides;
+    int sense{};
+    int sides{};
     std::optional<int> cont;
 
     struct glaze
@@ -103,9 +100,9 @@ struct glz_face
 
 struct glz_SPAinterval
 {
-    bool lowfinite;
+    bool lowfinite{};
     std::optional<double> low;
-    bool highfinite;
+    bool highfinite{};
     std::optional<double> high;
 
     struct glaze
@@ -124,11 +121,11 @@ struct glz_sphere_surface
 {
     glz_SPAinterval subset_range_u;
     glz_SPAinterval subset_range_v;
-    std::array<double, 3> centre;
-    double radius;
-    std::array<double, 3> uv_oridir;
-    std::array<double, 3> pole_dir;
-    bool reverse_v;
+    std::array<double, 3> centre{};
+    double radius{};
+    std::array<double, 3> uv_oridir{};
+    std::array<double, 3> pole_dir{};
+    bool reverse_v{};
 
     struct glaze
     {
