@@ -2021,11 +2021,7 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
             CURVE_ID
             :
                 {
-                    class CURVE* ptr =
-                    class (CURVE
-                    *
-                    )
-                    entity_ptr;
+                    class CURVE* ptr = (class CURVE*)entity_ptr;
                     switch (ptr->identity(2))
                     {
                     case
@@ -3797,10 +3793,9 @@ void api_restore_entity_list_neo4j(const Neo4jPart& conn, const std::vector<int6
                             {
                                 class EDGE* edge = (class EDGE*)id2ptr.at(rel_startnode_id);
                                 class CURVE* geometry =
-                                class (CURVE
-                                *
-                                )
-                                id2ptr.at(rel_endnode_id);
+                                    (class CURVE
+                                        *)
+                                    id2ptr.at(rel_endnode_id);
                                 edge->set_geometry(geometry);
                             }
                             break;
@@ -3822,10 +3817,9 @@ void api_restore_entity_list_neo4j(const Neo4jPart& conn, const std::vector<int6
                             {
                                 class PCURVE* pcurve = (class PCURVE*)id2ptr.at(rel_startnode_id);
                                 class CURVE* ref_curve =
-                                class (CURVE
-                                *
-                                )
-                                id2ptr.at(rel_endnode_id);
+                                    (class CURVE
+                                        *)
+                                    id2ptr.at(rel_endnode_id);
                                 pcurve->set_def(ref_curve, pcurve->index(), 0, pcurve->offset());
                             }
                             break;
@@ -4102,11 +4096,9 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
             CURVE_ID
             :
                 {
-                    class CURVE* ptr =
-                    class (CURVE
-                    *
-                    )
-                    (*it);
+                    class CURVE* ptr = (class CURVE
+                            *)
+                        (*it);
                     switch (ptr->identity(2))
                     {
                     case
@@ -4233,10 +4225,9 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
         :
             {
                 class CURVE* ptr =
-                class (CURVE
-                *
-                )
-                (*it);
+                    (class CURVE
+                        *)
+                    (*it);
                 switch (ptr->identity(2))
                 {
                 case
@@ -4496,11 +4487,8 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
 
         :
             {
-                class COclass
-                EDGE * ptr = (class COclass
-                EDGE *
-                )
-                entity_ptr;
+                class COEDGE* ptr = (class COEDGE*)
+                    entity_ptr;
                 Node* ptrnode = new Node();
                 if (ctx.ptr2nodeid.find(ptr) != ctx.ptr2nodeid.end())
                 {
@@ -4578,10 +4566,9 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
         :
             {
                 class CURVE* ptr =
-                class (CURVE
-                *
-                )
-                entity_ptr;
+                    (class CURVE
+                        *)
+                    entity_ptr;
                 switch (ptr->identity(2))
                 {
                 case
@@ -6282,10 +6269,9 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalCont
                         {
                             class EDGE* edge = (class EDGE*)id2ptr.at(rel_startnode_id);
                             class CURVE* geometry =
-                            class (CURVE
-                            *
-                            )
-                            id2ptr.at(rel_endnode_id);
+                                (class CURVE
+                                    *)
+                                id2ptr.at(rel_endnode_id);
                             edge->set_geometry(geometry);
                         }
                         break;
@@ -6307,10 +6293,9 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalCont
                         {
                             class PCURVE* pcurve = (class PCURVE*)id2ptr.at(rel_startnode_id);
                             class CURVE* ref_curve =
-                            class (CURVE
-                            *
-                            )
-                            id2ptr.at(rel_endnode_id);
+                                (class CURVE
+                                    *)
+                                id2ptr.at(rel_endnode_id);
                             pcurve->set_def(ref_curve, pcurve->index(), 0, pcurve->offset());
                         }
                         break;
