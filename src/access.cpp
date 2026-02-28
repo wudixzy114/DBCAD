@@ -1843,18 +1843,15 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
             case SUBSHELL_ID:
 
                 {
-                    class SUBSHELL * ptr = (class SUBSHELL*)entity_ptr;
-                ITERATE_MACRO_WITH_PARAM2(_API_PUSH_PTR_NEO4J_SUBGRAPH, ptr, subshell, parent, sibling, child, face,
-                                          wire);
-                Node * ptrnode = ptr2node.at(ptr);
-                ptrnode->labels = mg_list_make_empty(1);
-                mg_list_append(ptrnode->labels, mg_value_make_string("subshell"));
-                ptrnode->properties['a'] = mg_value_make_string("subshell");
-
-
-
-            }
-            break;
+                    class SUBSHELL* ptr = (class SUBSHELL*)entity_ptr;
+                    ITERATE_MACRO_WITH_PARAM2(_API_PUSH_PTR_NEO4J_SUBGRAPH, ptr, subshell, parent, sibling, child, face,
+                                              wire);
+                    Node* ptrnode = ptr2node.at(ptr);
+                    ptrnode->labels = mg_list_make_empty(1);
+                    mg_list_append(ptrnode->labels, mg_value_make_string("subshell"));
+                    ptrnode->properties['a'] = mg_value_make_string("subshell");
+                }
+                break;
             case
             WIRE_ID
 
@@ -1951,10 +1948,10 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
                     ptrnode->properties['a'] = mg_value_make_string("vertex");
                 }
                 break;
-                case
-                PCURVE_ID
+            case
+            PCURVE_ID
 
-                :
+            :
                 {
                     class PCURVE* ptr = (class PCURVE*)entity_ptr;
                     int def_type = ((class PCURVE*)ptr)->gme_get_def_type();
@@ -2006,10 +2003,10 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
                     }
                 }
                 break;
-                case
-                APOINT_ID
+            case
+            APOINT_ID
 
-                :
+            :
                 {
                     class APOINT* ptr = (class APOINT*)entity_ptr;
                     SPAposition pos = ((class APOINT*)ptr)->coords();
@@ -2024,13 +2021,17 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
             CURVE_ID
             :
                 {
-                    class CURVE* ptr = class (CURVE*)entity_ptr;
+                    class CURVE* ptr =
+                    class (CURVE
+                    *
+                    )
+                    entity_ptr;
                     switch (ptr->identity(2))
                     {
-                        case
-                        STRAIGHT_ID
+                    case
+                    STRAIGHT_ID
 
-                        :
+                    :
                         {
                             class STRAIGHT* ptr = (class STRAIGHT*)entity_ptr;
                             straight gem = ((class STRAIGHT*)ptr)->gme_get_def();
@@ -2180,11 +2181,10 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
                 }
                 break;
             case SURFACE_ID
-                :
+            :
                 {
-                    class SURFACE * ptr = (class SURFACE *
-                    )
-                    entity_ptr;
+                    class SURFACE* ptr = (class SURFACE*)
+                        entity_ptr;
                     switch (ptr->identity(2))
                     {
                     case
@@ -2228,10 +2228,10 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
                             delete gem_data;
                         }
                         break;
-                        case
-                        TORUS_ID
+                    case
+                    TORUS_ID
 
-                        :
+                    :
                         {
                             class TORUS* ptr = (class TORUS*)entity_ptr;
                             torus gem = ((class TORUS*)ptr)->gme_get_def();
@@ -2543,7 +2543,7 @@ void api_restore_entity_list_neo4j(const Neo4jPart& conn, const std::vector<int6
                             break;
                         case AccessUtils::Restore::Neo4jNode::coedge:
                             {
-                                class COEDGE * coedge = nullptr;
+                                class COEDGE* coedge = nullptr;
                                 API_BEGIN;
                                     coedge = ACIS_NEW class COEDGE();
                                 API_END;
@@ -3641,9 +3641,8 @@ void api_restore_entity_list_neo4j(const Neo4jPart& conn, const std::vector<int6
                         case AccessUtils::Restore::Neo4jEdge::wire_coedge_ptr:
                             {
                                 class WIRE* wire = (class WIRE*)id2ptr.at(rel_startnode_id);
-                                class COEDGE * coedge = (class COEDGE *
-                                )
-                                id2ptr.at(rel_endnode_id);
+                                class COEDGE* coedge = (class COEDGE*)
+                                    id2ptr.at(rel_endnode_id);
                                 wire->set_coedge(coedge);
                             }
                             break;
@@ -3694,9 +3693,8 @@ void api_restore_entity_list_neo4j(const Neo4jPart& conn, const std::vector<int6
                         case AccessUtils::Restore::Neo4jEdge::face_geometry_ptr:
                             {
                                 class FACE* face = (class FACE*)id2ptr.at(rel_startnode_id);
-                                class SURFACE * geometry = (class SURFACE *
-                                )
-                                id2ptr.at(rel_endnode_id);
+                                class SURFACE* geometry = (class SURFACE*)
+                                    id2ptr.at(rel_endnode_id);
                                 face->set_geometry(geometry);
                             }
                             break;
@@ -3710,9 +3708,8 @@ void api_restore_entity_list_neo4j(const Neo4jPart& conn, const std::vector<int6
                         case AccessUtils::Restore::Neo4jEdge::loop_start_ptr:
                             {
                                 class LOOP* loop = (class LOOP*)id2ptr.at(rel_startnode_id);
-                                class COEDGE * start = (class COEDGE *
-                                )
-                                id2ptr.at(rel_endnode_id);
+                                class COEDGE* start = (class COEDGE*)
+                                    id2ptr.at(rel_endnode_id);
                                 loop->set_start(start);
                             }
                             break;
@@ -3725,60 +3722,51 @@ void api_restore_entity_list_neo4j(const Neo4jPart& conn, const std::vector<int6
                             break;
                         case AccessUtils::Restore::Neo4jEdge::coedge_next_ptr:
                             {
-                                class COEDGE * coedge = (class COEDGE *
-                                )
-                                id2ptr.at(rel_startnode_id);
-                                class COEDGE * next = (class COEDGE *
-                                )
-                                id2ptr.at(rel_endnode_id);
+                                class COEDGE* coedge = (class COEDGE*)
+                                    id2ptr.at(rel_startnode_id);
+                                class COEDGE* next = (class COEDGE*)
+                                    id2ptr.at(rel_endnode_id);
                                 coedge->set_next(next);
                             }
                             break;
                         case AccessUtils::Restore::Neo4jEdge::coedge_previous_ptr:
                             {
-                                class COEDGE * coedge = (class COEDGE *
-                                )
-                                id2ptr.at(rel_startnode_id);
-                                class COEDGE * previous = (class COEDGE *
-                                )
-                                id2ptr.at(rel_endnode_id);
+                                class COEDGE* coedge = (class COEDGE*)
+                                    id2ptr.at(rel_startnode_id);
+                                class COEDGE* previous = (class COEDGE*)
+                                    id2ptr.at(rel_endnode_id);
                                 coedge->set_previous(previous);
                             }
                             break;
                         case AccessUtils::Restore::Neo4jEdge::coedge_partner_ptr:
                             {
-                                class COEDGE * coedge = (class COEDGE *
-                                )
-                                id2ptr.at(rel_startnode_id);
-                                class COEDGE * partner = (class COEDGE *
-                                )
-                                id2ptr.at(rel_endnode_id);
+                                class COEDGE* coedge = (class COEDGE*)
+                                    id2ptr.at(rel_startnode_id);
+                                class COEDGE* partner = (class COEDGE*)
+                                    id2ptr.at(rel_endnode_id);
                                 coedge->set_partner(partner);
                             }
                             break;
                         case AccessUtils::Restore::Neo4jEdge::coedge_edge_ptr:
                             {
-                                class COEDGE * coedge = (class COEDGE *
-                                )
-                                id2ptr.at(rel_startnode_id);
+                                class COEDGE* coedge = (class COEDGE*)
+                                    id2ptr.at(rel_startnode_id);
                                 class EDGE* edge = (class EDGE*)id2ptr.at(rel_endnode_id);
                                 coedge->set_edge(edge);
                             }
                             break;
                         case AccessUtils::Restore::Neo4jEdge::coedge_owner_ptr:
                             {
-                                class COEDGE * coedge = (class COEDGE *
-                                )
-                                id2ptr.at(rel_startnode_id);
+                                class COEDGE* coedge = (class COEDGE*)
+                                    id2ptr.at(rel_startnode_id);
                                 class ENTITY* owner = (class ENTITY*)id2ptr.at(rel_endnode_id);
                                 coedge->set_owner(owner);
                             }
                             break;
                         case AccessUtils::Restore::Neo4jEdge::coedge_geometry_ptr:
                             {
-                                class COEDGE * coedge = (class COEDGE *
-                                )
-                                id2ptr.at(rel_startnode_id);
+                                class COEDGE* coedge = (class COEDGE*)
+                                    id2ptr.at(rel_startnode_id);
                                 class PCURVE* geometry = (class PCURVE*)id2ptr.at(rel_endnode_id);
                                 coedge->set_geometry(geometry);
                             }
@@ -3800,9 +3788,8 @@ void api_restore_entity_list_neo4j(const Neo4jPart& conn, const std::vector<int6
                         case AccessUtils::Restore::Neo4jEdge::edge_coedge_ptr:
                             {
                                 class EDGE* edge = (class EDGE*)id2ptr.at(rel_startnode_id);
-                                class COEDGE * coedge = (class COEDGE *
-                                )
-                                id2ptr.at(rel_endnode_id);
+                                class COEDGE* coedge = (class COEDGE*)
+                                    id2ptr.at(rel_endnode_id);
                                 edge->set_coedge(coedge);
                             }
                             break;
@@ -4074,10 +4061,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
             SHELL_ID
 
             :
-                case
-                SUBSHELL_ID
+            case
+            SUBSHELL_ID
 
-                :
+            :
             case
             WIRE_ID
 
@@ -4093,17 +4080,17 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
             case
             COEDGE_ID
 
-                :
+            :
             case EDGE_ID
 
             :
             case VERTEX_ID
 
             :
-                case
-                APOINT_ID
+            case
+            APOINT_ID
 
-                :
+            :
             case TRANSFORM_ID
 
             :
@@ -4122,10 +4109,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                     (*it);
                     switch (ptr->identity(2))
                     {
-                        case
-                        STRAIGHT_ID
+                    case
+                    STRAIGHT_ID
 
-                        :
+                    :
                     case
                     ELLIPSE_ID
 
@@ -4146,11 +4133,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                 }
                 break;
             case SURFACE_ID
-                :
+            :
                 {
-                    class SURFACE * ptr = (class SURFACE *
-                    )
-                    (*it);
+                    class SURFACE* ptr = (class SURFACE*)
+                        (*it);
                     switch (ptr->identity(2))
                     {
                     case
@@ -4161,10 +4147,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                     SPHERE_ID
 
                     :
-                        case
-                        TORUS_ID
+                    case
+                    TORUS_ID
 
-                        :
+                    :
                     case
                     CONE_ID
 
@@ -4205,10 +4191,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
         SHELL_ID
 
         :
-            case
-            SUBSHELL_ID
+        case
+        SUBSHELL_ID
 
-            :
+        :
         case
         WIRE_ID
 
@@ -4224,17 +4210,17 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
         case
         COEDGE_ID
 
-            :
+        :
         case EDGE_ID
 
         :
         case VERTEX_ID
 
         :
-            case
-            APOINT_ID
+        case
+        APOINT_ID
 
-            :
+        :
         case TRANSFORM_ID
 
         :
@@ -4253,10 +4239,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                 (*it);
                 switch (ptr->identity(2))
                 {
-                    case
-                    STRAIGHT_ID
+                case
+                STRAIGHT_ID
 
-                    :
+                :
                 case
                 ELLIPSE_ID
 
@@ -4277,11 +4263,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
             }
             break;
         case SURFACE_ID
-            :
+        :
             {
-                class SURFACE * ptr = (class SURFACE *
-                )
-                (*it);
+                class SURFACE* ptr = (class SURFACE*)
+                    (*it);
                 switch (ptr->identity(2))
                 {
                 case
@@ -4292,10 +4277,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                 SPHERE_ID
 
                 :
-                    case
-                    TORUS_ID
+                case
+                TORUS_ID
 
-                    :
+                :
                 case
                 CONE_ID
 
@@ -4414,10 +4399,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                 ptrnode->properties['a'] = mg_value_make_string("shell");
             }
             break;
-            case
-            SUBSHELL_ID
+        case
+        SUBSHELL_ID
 
-            :
+        :
             {
                 class SUBSHELL* ptr = (class SUBSHELL*)
                     entity_ptr;
@@ -4567,10 +4552,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                 ptrnode->properties['a'] = mg_value_make_string("vertex");
             }
             break;
-            case
-            APOINT_ID
+        case
+        APOINT_ID
 
-            :
+        :
             {
                 class APOINT* ptr = (class APOINT*)entity_ptr;
                 SPAposition pos = ((class APOINT*)ptr)->coords();
@@ -4599,10 +4584,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                 entity_ptr;
                 switch (ptr->identity(2))
                 {
-                    case
-                    STRAIGHT_ID
+                case
+                STRAIGHT_ID
 
-                    :
+                :
                     {
                         class STRAIGHT* ptr = (class STRAIGHT*)entity_ptr;
                         straight gem = ((class STRAIGHT*)ptr)->gme_get_def();
@@ -4708,11 +4693,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
             }
             break;
         case SURFACE_ID
-            :
+        :
             {
-                class SURFACE * ptr = (class SURFACE *
-                )
-                entity_ptr;
+                class SURFACE* ptr = (class SURFACE*)
+                    entity_ptr;
                 switch (ptr->identity(2))
                 {
                 case
@@ -4770,10 +4754,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                         delete gem_data;
                     }
                     break;
-                    case
-                    TORUS_ID
+                case
+                TORUS_ID
 
-                    :
+                :
                     {
                         class TORUS* ptr = (class TORUS*)entity_ptr;
                         torus gem = ((class TORUS*)ptr)->gme_get_def();
@@ -5168,10 +5152,10 @@ void api_save_neo4j(const Neo4jPart& conn, IncrementalContext& ctx)
                 }
             }
             break;
-            case
-            SUBSHELL_ID
+        case
+        SUBSHELL_ID
 
-            :
+        :
             {
                 class SUBSHELL* ptr = (class SUBSHELL*)
                     entity_ptr;
@@ -5753,7 +5737,7 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalCont
                         break;
                     case AccessUtils::Restore::Neo4jNode::coedge:
                         {
-                            class COEDGE * coedge = nullptr;
+                            class COEDGE* coedge = nullptr;
                             API_BEGIN;
                                 coedge = ACIS_NEW class COEDGE();
                             API_END;
@@ -6142,9 +6126,8 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalCont
                     case AccessUtils::Restore::Neo4jEdge::wire_coedge_ptr:
                         {
                             class WIRE* wire = (class WIRE*)id2ptr.at(rel_startnode_id);
-                            class COEDGE * coedge = (class COEDGE *
-                            )
-                            id2ptr.at(rel_endnode_id);
+                            class COEDGE* coedge = (class COEDGE*)
+                                id2ptr.at(rel_endnode_id);
                             wire->set_coedge(coedge);
                         }
                         break;
@@ -6195,9 +6178,8 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalCont
                     case AccessUtils::Restore::Neo4jEdge::face_geometry_ptr:
                         {
                             class FACE* face = (class FACE*)id2ptr.at(rel_startnode_id);
-                            class SURFACE * geometry = (class SURFACE *
-                            )
-                            id2ptr.at(rel_endnode_id);
+                            class SURFACE* geometry = (class SURFACE*)
+                                id2ptr.at(rel_endnode_id);
                             face->set_geometry(geometry);
                         }
                         break;
@@ -6211,9 +6193,8 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalCont
                     case AccessUtils::Restore::Neo4jEdge::loop_start_ptr:
                         {
                             class LOOP* loop = (class LOOP*)id2ptr.at(rel_startnode_id);
-                            class COEDGE * start = (class COEDGE *
-                            )
-                            id2ptr.at(rel_endnode_id);
+                            class COEDGE* start = (class COEDGE*)
+                                id2ptr.at(rel_endnode_id);
                             loop->set_start(start);
                         }
                         break;
@@ -6226,60 +6207,51 @@ void api_restore_neo4j(const Neo4jPart& conn, int generation_id, IncrementalCont
                         break;
                     case AccessUtils::Restore::Neo4jEdge::coedge_next_ptr:
                         {
-                            class COEDGE * coedge = (class COEDGE *
-                            )
-                            id2ptr.at(rel_startnode_id);
-                            class COEDGE * next = (class COEDGE *
-                            )
-                            id2ptr.at(rel_endnode_id);
+                            class COEDGE* coedge = (class COEDGE*)
+                                id2ptr.at(rel_startnode_id);
+                            class COEDGE* next = (class COEDGE*)
+                                id2ptr.at(rel_endnode_id);
                             coedge->set_next(next);
                         }
                         break;
                     case AccessUtils::Restore::Neo4jEdge::coedge_previous_ptr:
                         {
-                            class COEDGE * coedge = (class COEDGE *
-                            )
-                            id2ptr.at(rel_startnode_id);
-                            class COEDGE * previous = (class COEDGE *
-                            )
-                            id2ptr.at(rel_endnode_id);
+                            class COEDGE* coedge = (class COEDGE*)
+                                id2ptr.at(rel_startnode_id);
+                            class COEDGE* previous = (class COEDGE*)
+                                id2ptr.at(rel_endnode_id);
                             coedge->set_previous(previous);
                         }
                         break;
                     case AccessUtils::Restore::Neo4jEdge::coedge_partner_ptr:
                         {
-                            class COEDGE * coedge = (class COEDGE *
-                            )
-                            id2ptr.at(rel_startnode_id);
-                            class COEDGE * partner = (class COEDGE *
-                            )
-                            id2ptr.at(rel_endnode_id);
+                            class COEDGE* coedge = (class COEDGE*)
+                                id2ptr.at(rel_startnode_id);
+                            class COEDGE* partner = (class COEDGE*)
+                                id2ptr.at(rel_endnode_id);
                             coedge->set_partner(partner);
                         }
                         break;
                     case AccessUtils::Restore::Neo4jEdge::coedge_edge_ptr:
                         {
-                            class COEDGE * coedge = (class COEDGE *
-                            )
-                            id2ptr.at(rel_startnode_id);
+                            class COEDGE* coedge = (class COEDGE*)
+                                id2ptr.at(rel_startnode_id);
                             class EDGE* edge = (class EDGE*)id2ptr.at(rel_endnode_id);
                             coedge->set_edge(edge);
                         }
                         break;
                     case AccessUtils::Restore::Neo4jEdge::coedge_owner_ptr:
                         {
-                            class COEDGE * coedge = (class COEDGE *
-                            )
-                            id2ptr.at(rel_startnode_id);
+                            class COEDGE* coedge = (class COEDGE*)
+                                id2ptr.at(rel_startnode_id);
                             class ENTITY* owner = (class ENTITY*)id2ptr.at(rel_endnode_id);
                             coedge->set_owner(owner);
                         }
                         break;
                     case AccessUtils::Restore::Neo4jEdge::coedge_geometry_ptr:
                         {
-                            class COEDGE * coedge = (class COEDGE *
-                            )
-                            id2ptr.at(rel_startnode_id);
+                            class COEDGE* coedge = (class COEDGE*)
+                                id2ptr.at(rel_startnode_id);
                             class PCURVE* geometry = (class PCURVE*)id2ptr.at(rel_endnode_id);
                             coedge->set_geometry(geometry);
                         }
