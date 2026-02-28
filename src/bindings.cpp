@@ -91,6 +91,15 @@ PYBIND11_MODULE(PyDbcad, m)
                 api_solid_block(SPAposition(0, 0, 0), SPAposition(w, d, h), block);
             API_END;
             if (!result.ok()) throw std::runtime_error("Failed to create ACIS test block");
+        })
+
+        .def("create_test_sphere", [](dbcad::ModelerSession& self, double radius)
+        {
+            class BODY* sphere = nullptr;
+            API_BEGIN;
+                // 调用 ACIS API 创建球体
+                api_solid_sphere(SPAposition(0, 0, 0), radius, sphere);
+            API_END;
+            if (!result.ok()) throw std::runtime_error("Failed to create ACIS test sphere");
         });
 }
-
