@@ -14,7 +14,7 @@
 #include <acis/include/alltop.hxx>
 #include <glaze/glaze.hpp>
 #include <acis/include/api.hxx>
-#include <acis/include/cstrapi.hxx>m
+#include <acis/include/cstrapi.hxx>
 #include <acis/include/int_int.hxx>
 #include <acis/include/exct_int.hxx>
 #include <acis/include/exct_spl.hxx>
