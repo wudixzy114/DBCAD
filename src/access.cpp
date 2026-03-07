@@ -2324,6 +2324,13 @@ void api_save_entity_list_neo4j(const Neo4jPart& conn, const ENTITY_LIST& entity
             default:
                 {
                     // PATTERN, ATTRIB等其他继承于ENTITY的实体
+                    // 修复：必须给未知的实体一个保底的 label，否则序列化会崩溃
+                    //     Node* ptrnode = ptr2node.at(entity_ptr);
+                    //     ptrnode->labels = mg_list_make_empty(1);
+                    //     mg_list_append(ptrnode->labels, mg_value_make_string("unknown_entity"));
+                    //
+                    //     ptrnode->properties['a'] = mg_value_make_string("unknown_entity");
+                    //     ptrnode->properties['b'] = mg_value_make_integer(entity_ptr->identity(1)); // 记录下它的真实 ID
                 }
                 break;
             }

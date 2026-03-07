@@ -32,18 +32,39 @@ void Neo4jPart::execute_bolt(const char* statement, const mg_map* parameters) co
         myerror("尝试在无效的会话上执行 Bolt 查询。");
         return;
     }
-    // 修复点：出错时不要在这里销毁 session，抛出异常即可，析构函数会自动安全销毁
-    if (mg_session_run(session, statement, parameters, NULL, NULL, NULL) < 0)
+
+    // 修复逻辑：处理传入 NULL 的情况，mg_session_run 不允许 parameters 为空
+    mg_map* temp_empty_params = nullptr;
+    const mg_map* safe_parameters = parameters;
+
+    if (safe_parameters == nullptr)
+    {
+        temp_empty_params = mg_map_make_empty(0);
+        safe_parameters = temp_empty_params;
+    }
+
+    int status = mg_session_run(session, statement, safe_parameters, NULL, NULL, NULL);
+
+    // 如果创建了临时 Map，必须在使用后销毁以防止内存泄漏
+    if (temp_empty_params)
+    {
+        mg_map_destroy(temp_empty_params);
+    }
+
+    // 检查执行结果
+    if (status < 0)
     {
         const char* err = mg_session_error(session);
         myerror(std::format("执行Cypher语句失败: {}", err ? err : "Unknown error"));
     }
+
     if (mg_session_pull(session, NULL) < 0)
     {
         const char* err = mg_session_error(session);
         myerror(std::format("拉取Cypher语句执行结果失败: {}", err ? err : "Unknown error"));
     }
 }
+
 
 void Neo4jPart::discard_all_results() const
 {

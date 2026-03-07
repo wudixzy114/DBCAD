@@ -41,6 +41,7 @@ set(CORE_HEADERS
         # 注意：DbcadAPI.h 如果包含 pybind 代码，不要放这里；
         # 如果只是纯 C++ 接口声明，可以放这里。暂时先放这里方便 IDE 查看。
         src/DbcadAPI.h
+        src/main.cpp
 )
 set(BINDING_SOURCES
         src/bindings.cpp
@@ -129,6 +130,15 @@ get_target_property(TEMP_CORE_DEFS project_core COMPILE_DEFINITIONS)
 message(STATUS "[Macros]   project_core Definitions: ${TEMP_CORE_DEFS}")
 message(STATUS "==========================================================")
 
+add_executable(DbcadTest src/main.cpp)
+target_link_libraries(DbcadTest PRIVATE project_core)
+set(ACIS_BIN_DIR "$<$<CONFIG:Debug>:${ACIS_DEBUG_ROOT}/bin>$<$<CONFIG:Release>:${ACIS_RELEASE_ROOT}/bin>")
+add_custom_command(TARGET DbcadTest POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${ACIS_BIN_DIR}"
+        "$<TARGET_FILE_DIR:DbcadTest>"
+        COMMENT "Copying ACIS DLLs to Executable Directory..."
+)
 
 # 使用 pybind11 提供的函数创建模块
 pybind11_add_module(PyDbcad ${BINDING_SOURCES})
