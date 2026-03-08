@@ -101,5 +101,32 @@ PYBIND11_MODULE(PyDbcad, m)
                 api_solid_sphere(SPAposition(0, 0, 0), radius, sphere);
             API_END;
             if (!result.ok()) throw std::runtime_error("Failed to create ACIS test sphere");
-        });
+        })
+
+        // --- 原有的获取所有实体的函数 (保留，用于特殊用途) ---
+        .def("get_all_entities", [](dbcad::ModelerSession& self)
+        {
+            auto* list = new ENTITY_LIST();
+            self.GetActiveEntities(*list);
+            return list;
+        }, py::return_value_policy::take_ownership)
+
+        // --- [关键新增]：只获取顶层 BODY 实体的函数 ---
+        .def("get_active_bodies", [](dbcad::ModelerSession& self)
+        {
+            ENTITY_LIST raw_list;
+            self.GetActiveEntities(raw_list);
+
+            auto* clean_list = new ENTITY_LIST();
+            for (class ENTITY* ent = raw_list.first(); ent != nullptr; ent = raw_list.next())
+            {
+                // 只保留顶层 Body，防止历史流、属性等杂质进入保存流程
+                if (ent->identity(0) == BODY_TYPE)
+                {
+                    // 或者使用 is_BODY(ent)
+                    clean_list->add(ent);
+                }
+            }
+            return clean_list;
+        }, py::return_value_policy::take_ownership);
 }
