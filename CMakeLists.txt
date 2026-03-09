@@ -15,7 +15,7 @@ include(FetchContent)
 FetchContent_Declare(
         pybind11
         GIT_REPOSITORY https://github.com/pybind/pybind11.git
-        GIT_TAG v3.0.2  # 可以指定最新稳定版
+        GIT_TAG v3.0.2 # 可以指定最新稳定版
 )
 FetchContent_MakeAvailable(pybind11)
 set(BINDING_SOURCES
@@ -24,19 +24,25 @@ set(BINDING_SOURCES
 
 set(CORE_SOURCES
         src/acis.cpp
+        src/acis_runtime.cpp
         src/access.cpp
+        src/access_switch_registry.cpp
         src/common.cpp
         src/gme_dump_object.cpp
         src/gme_mesh.cpp
+        src/graph_storage.cpp
         src/neo4j.cpp
         src/DbcadAPI.cpp
 )
 set(CORE_HEADERS
         src/acis.hxx
+        src/acis_runtime.hxx
         src/access.hxx
+        src/access_switch_registry.hxx
         src/common.hxx
         src/gme_dump_object.hxx
         src/gme_mesh.hxx
+        src/graph_storage.hxx
         src/neo4j.hxx
         # 注意：DbcadAPI.h 如果包含 pybind 代码，不要放这里；
         # 如果只是纯 C++ 接口声明，可以放这里。暂时先放这里方便 IDE 查看。
@@ -50,41 +56,41 @@ set(BINDING_SOURCES
 add_library(project_core STATIC ${CORE_SOURCES} ${CORE_HEADERS})
 target_compile_definitions(project_core PUBLIC PROJECT_CORE_STATIC)
 #target_compile_definitions(project_core PRIVATE DBCAD_EXPORTS)
-if (MSVC)
-    target_compile_options(project_core PUBLIC
-            /utf-8
-            /Zc:__cplusplus
-            /Zc:wchar_t     # VS: /Zc:wchar_t
-            /Zc:inline      # VS: /Zc:inline
-            /MP             # 多核编译
-    )
-    target_compile_definitions(project_core PUBLIC
-            _CRT_SECURE_NO_WARNINGS
-            WIN32_LEAN_AND_MEAN
-            UNICODE _UNICODE  # Windows 现代开发通常默认开启
-    )
-    target_compile_definitions(project_core PUBLIC
+if(MSVC)
+        target_compile_options(project_core PUBLIC
+                /utf-8
+                /Zc:__cplusplus
+                /Zc:wchar_t # VS: /Zc:wchar_t
+                /Zc:inline # VS: /Zc:inline
+                /MP # 多核编译
+        )
+        target_compile_definitions(project_core PUBLIC
+                _CRT_SECURE_NO_WARNINGS
+                WIN32_LEAN_AND_MEAN
+                UNICODE _UNICODE # Windows 现代开发通常默认开启
+        )
+        target_compile_definitions(project_core PUBLIC
 
-            # ---- ACIS 文档强制要求的预处理器宏 ----
-            _WINDOWS               # MS specific
-            _WINDOWS_SOURCE        # MS specific
-            NT_VC16_64             # 定义基础架构为 VS2019 x64
-            SPA_NO_AUTO_LINK       # 禁用 ACIS 库自动链接（因为我们在下面手动链接了）
-            _WIN32_WINNT=0x0600    # 定义主要操作系统版本
+                # ---- ACIS 文档强制要求的预处理器宏 ----
+                _WINDOWS # MS specific
+                _WINDOWS_SOURCE # MS specific
+                NT_VC16_64 # 定义基础架构为 VS2019 x64
+                SPA_NO_AUTO_LINK # 禁用 ACIS 库自动链接（因为我们在下面手动链接了）
+                _WIN32_WINNT=0x0600 # 定义主要操作系统版本
 
-            # Debug 专属宏
-            $<$<CONFIG:Debug>:SPA_DEBUG>
-            $<$<CONFIG:Debug>:NT_VC16_64_DLLD>
+                # Debug 专属宏
+                $<$<CONFIG:Debug>:SPA_DEBUG>
+                $<$<CONFIG:Debug>:NT_VC16_64_DLLD>
 
-            # Release 专属宏
-            $<$<CONFIG:Release>:NDEBUG>
-            $<$<CONFIG:Release>:NT_VC16_64_DLL>
-    )
-    target_link_options(project_core INTERFACE
-            /STACK:4194304
-            /MACHINE:AMD64
-    )
-endif ()
+                # Release 专属宏
+                $<$<CONFIG:Release>:NDEBUG>
+                $<$<CONFIG:Release>:NT_VC16_64_DLL>
+        )
+        target_link_options(project_core INTERFACE
+                /STACK:4194304
+                /MACHINE:AMD64
+        )
+endif()
 target_link_libraries(project_core PUBLIC
         opengl32.lib
         ws2_32.lib

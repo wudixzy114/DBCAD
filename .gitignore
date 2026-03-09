@@ -5,3 +5,9 @@ dynamic/SpaACIS.dll
 dynamic/SpaACISd.dll
 release/SpaACISd.dll
 release/SpaACIS.dll
+dynamic/**
+release/**
+build
+.vscode
+**/*.dll
+**/*.lib
