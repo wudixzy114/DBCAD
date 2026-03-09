@@ -26,6 +26,7 @@ set(CORE_SOURCES
         src/acis.cpp
         src/acis_runtime.cpp
         src/access.cpp
+        src/access_restore_dispatch.cpp
         src/access_switch_registry.cpp
         src/common.cpp
         src/gme_dump_object.cpp
@@ -38,6 +39,7 @@ set(CORE_HEADERS
         src/acis.hxx
         src/acis_runtime.hxx
         src/access.hxx
+        src/access_restore_dispatch.hxx
         src/access_switch_registry.hxx
         src/common.hxx
         src/gme_dump_object.hxx
